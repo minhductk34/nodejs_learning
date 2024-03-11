@@ -13,7 +13,13 @@ const productSchema = new mongoose.Schema(
       minlenght: 3,
     },
     description: { type: String },
+    categoriesId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Categories",
+      required: true,
+    },
   },
+
   {
     timestamps: true,
     versionKey: false,

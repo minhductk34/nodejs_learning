@@ -3,11 +3,10 @@ import { connect } from "mongoose";
 import router from "./router/index.js";
 import dotenv from "dotenv";
 dotenv.config();
-connect("mongodb://localhost:27017/LearnMongoDB");
-// const PORT = process.env.PORT;
-// console.log(process.env.PORT);
 
-const PORT = 8000;
+const PORT = process.env.PORT;
+const URI = process.env.URI;
+connect(URI);
 const app = express();
 app.use(express.json());
 app.use("/api", router);

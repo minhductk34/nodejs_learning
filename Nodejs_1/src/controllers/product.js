@@ -1,9 +1,10 @@
-import Product from "../models/product.js";
+import Product from "../models/Product.js";
+import Categories from "../models/Categories.js";
 import { productValid } from "../validation/product.js";
 
 export const getAll = async (req, res) => {
   try {
-    const products = await Product.find();
+    const products = await Product.find({}).populate("categoriesId"); // Thực hiện populate thông tin từ category
 
     if (products.length === 0) {
       return res.status(404).json({
@@ -22,7 +23,7 @@ export const getAll = async (req, res) => {
 
 export const getById = async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id);
+    const product = await Product.findById(req.params.id).populate("categoriesId");
     if (!product) {
       return res.status(404).json({
         message: "Product not found",
@@ -39,15 +40,24 @@ export const getById = async (req, res) => {
 
 export const create = async (req, res) => {
   try {
-    const Valid = productValid.validate(req.body);
-    console.log(Valid);
-    const product = await Product.create(req.body);
-    if (!product) {
+    const { error } = productValid.validate(req.body);
+    if (error) {
+      return res.status(404).json({ message: error.details[0] });
+    }
+    const products = await Product.create(req.body);
+    
+    if (!products) {
       return res.status(404).json({
         message: "Couldn't create product",
       });
     }
-    return res.status(200).json({ message: "ok", data: product });
+    const updateCate = Categories.findByIdAndUpdate(products.categoriesId, {
+      $addToSet: products._id,
+    });
+    if (!updateCate) {
+      return res.status(404).json({ message: "Couldn't update categories" });
+    }
+    return res.status(200).json({ message: "ok", data: products });
   } catch (error) {
     console.error("Error fetching products:", error);
     return res.status(500).json({
